@@ -15,10 +15,6 @@ run/main_scene="res://scenes/prototype_level.tscn"
 config/features=PackedStringArray("4.1", "Forward Plus")
 config/icon="res://icon.svg"
 
-[display]
-
-window/stretch/scale=2.2
-
 [physics]
 
 2d/default_gravity=490.0
