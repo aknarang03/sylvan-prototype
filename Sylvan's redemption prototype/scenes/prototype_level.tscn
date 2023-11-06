@@ -199,9 +199,9 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_l4y3o")
 }],
-"loop": true,
+"loop": false,
 "name": &"possess_glide",
-"speed": 5.0
+"speed": 10.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -213,9 +213,9 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_6gmc4")
 }],
-"loop": true,
+"loop": false,
 "name": &"possess_ground",
-"speed": 5.0
+"speed": 10.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -1747,7 +1747,11 @@ remote_path = NodePath("../../Camera2D")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Player"]
 sprite_frames = SubResource("SpriteFrames_4lmwc")
-animation = &"possess_glide"
+animation = &"possess_ground"
+
+[node name="Timer" type="Timer" parent="Player"]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="Player"]
 
 [node name="TileMap" type="TileMap" parent="."]
 tile_set = SubResource("TileSet_lv3fd")
