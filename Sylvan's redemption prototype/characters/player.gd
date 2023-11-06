@@ -12,13 +12,17 @@ var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
 var direction : Vector2 = Vector2.ZERO
 var animation_locked : bool = false
 var was_in_air : bool = false
+var possess : bool = false
+@onready var enemy = $"../Enemy"
 
 
 func _physics_process(delta):
+	
+	#print(possess)
 	# Add the gravity.
+	
 	if not is_on_floor():
 		velocity.y += gravity * delta
-		
 		was_in_air = true
 	else: 
 		if was_in_air == true:
@@ -26,8 +30,22 @@ func _physics_process(delta):
 		was_in_air = false
 
 	# Handle Jump.
-	if Input.is_action_just_pressed("ui_accept") and is_on_floor():
-		jump()
+	if Input.is_action_just_pressed("ui_accept"):
+		if not possess:
+			if is_on_floor():
+				jump()
+		if possess:
+			jump()
+		
+		
+	if Input.is_key_label_pressed(KEY_P):
+		if !possess:
+			#print(position.x)
+			#print(enemy.get_global_pos().x)
+			var distance = sqrt(pow(position.x-enemy.get_global_pos().x,2)+pow(position.y-enemy.get_global_pos().y,2))
+			#print(distance)
+			if abs(distance) < 100:
+				on_possess()
 
 	# Get the input direction and handle the movement/deceleration.
 	# As good practice, you should replace UI actions with custom gameplay actions.
@@ -49,28 +67,49 @@ func update_facing_direction():
 		
 
 func update_animation():
-	if not animation_locked:
-		if direction.x != 0:
-			animated_sprite.play("walk")
-		else:
-			animated_sprite.play("idle")
+	if !possess:
+		if not animation_locked:
+			if direction.x != 0:
+				animated_sprite.play("walk")
+			else:
+				animated_sprite.play("idle")
+	if possess:
+		if not animation_locked:
+			if direction.x != 0:
+				animated_sprite.play("bird_fly")
+			else:
+				animated_sprite.play("bird_idle")
 	
 ## possibly change it so that velocity depends on how long you hold down space 
 func jump():
 	velocity.y = jump_velocity
-	animated_sprite.play("jump")
+	if not possess:
+		animated_sprite.play("jump")
+	else:
+		animated_sprite.play("bird_fly")
 	animation_locked = true
 	
 func glide():
 	## doesn't do anything yet; need to somehow make it so once he reaches full jump height he falls slower
 	velocity.y = float_velocity
 	
-	
 func land():
-	animated_sprite.play("land")
-	animation_locked = true
+	if not possess:
+		animated_sprite.play("land")
+		animation_locked = true
+	if possess:
+		animated_sprite.play("bird_idle")
+		animation_locked = false
 
 func _on_animated_sprite_2d_animation_finished():
 	if animated_sprite.animation == "land":
 		animation_locked = false
-		
+
+func on_possess():
+	animation_locked = true
+	animated_sprite.play("possess_ground")
+	animation_locked = false
+	#animated_sprite.play("bird_idle")
+	possess = true
+	position = enemy.get_global_position()
+	enemy.hide()
