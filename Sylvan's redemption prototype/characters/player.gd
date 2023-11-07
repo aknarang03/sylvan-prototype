@@ -1,15 +1,12 @@
 extends CharacterBody2D
 
-
 @export var speed : float = 300.0
 @export var jump_velocity : float = -300.0
-@export var float_velocity : float = -300.0
 
 @onready var animated_sprite : AnimatedSprite2D = $AnimatedSprite2D
 @onready var timer : Timer = $Timer
-@onready var canvas : CanvasLayer = $CanvasLayer
+#@onready var canvas : CanvasLayer = $CanvasLayer
 
-# Get the gravity from the project settings to be synced with RigidBody nodes.
 var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
 var direction : Vector2 = Vector2.ZERO
 var animation_locked : bool = false
@@ -17,6 +14,7 @@ var was_in_air : bool = false
 var possess : bool = false
 var time_possessed : float = 0
 var time_since_possess : float = 0
+var falling : bool = false
 @onready var enemy = $"../Enemy"
 
 
@@ -31,13 +29,31 @@ func _physics_process(delta):
 		possess = false
 		enemy.show()
 		enemy.set_position(position)
+		if not is_on_floor():
+			#animated_sprite.play("jump") #doesnt work- does it lock when i say possess = false?
+			falling = true
+			animation_locked = false
+			animated_sprite.play("fall")
 	
 	if not is_on_floor():
+		print(velocity.y)
 		velocity.y += gravity * delta
 		was_in_air = true
+		if velocity.y > -15 and velocity.y < 1:
+			#print("velocity is 0")
+			# fix it so that it remains like this for the rest of the fall
+			falling = true
+		if falling == true:
+			if Input.is_action_pressed("ui_accept"):
+				gravity = 50
+			else:
+				gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
+				
 	else: 
 		if was_in_air == true:
 			land()
+			falling = false
+			gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
 		was_in_air = false
 
 	# Handle Jump.
@@ -54,6 +70,7 @@ func _physics_process(delta):
 		if !possess:
 			#print(position.x)
 			#print(enemy.get_global_pos().x)
+			animation_locked = false
 			var distance = sqrt(pow(position.x-enemy.get_global_pos().x,2)+pow(position.y-enemy.get_global_pos().y,2))
 			#print(distance)
 			if abs(distance) < 100:
@@ -101,10 +118,6 @@ func jump():
 	else:
 		animated_sprite.play("bird_fly")
 	animation_locked = true
-	
-func glide():
-	## doesn't do anything yet; need to somehow make it so once he reaches full jump height he falls slower
-	velocity.y = float_velocity
 	
 func land():
 	if not possess:
